@@ -98,13 +98,15 @@ function saveAs (url, fileName) {
   dllink.remove()
 }
 
-watch(zhqnSelected, nv => {
+async function reDraw (nv = zhqnSelected.value) {
   if (nv) {
     renderZhqn()
   } else if (nv === false) {
     renderCyol()
   }
-})
+}
+
+watch(zhqnSelected, reDraw)
 </script>
 
 <template>
@@ -155,6 +157,9 @@ watch(zhqnSelected, nv => {
       </div>
       <button @click.prevent="api.authenticate(name, id)">
         提交信息
+      </button>
+      <button @click.prevent="reDraw">
+        刷新预览窗口
       </button>
     </fieldset>
     <fieldset class="section">
