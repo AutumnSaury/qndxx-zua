@@ -3,12 +3,13 @@ import html2canvas from 'html2canvas'
 import { ref, watch } from 'vue'
 import statusBarImg from './assets/statusBar.png'
 import api from './api/api.js'
+import './assets/check-mark.svg'
 
 const zhqnLoaded = ref(false)
 const preview = ref(null)
 const frame = ref(null)
 const name = ref('')
-const id = ref(null)
+const id = ref('')
 const zhqnSelected = ref(null)
 const fileName1 = ref('')
 const fileName2 = ref('')
@@ -103,78 +104,149 @@ watch(zhqnSelected, nv => {
 </script>
 
 <template>
-  <div id="container">
-    <iframe
-      id="frame"
-      ref="frame"
-      src="/zhqn"
-      frameborder="0"
-      @load="zhqnLoaded = true"
-    />
-    <div id="border">
-      <canvas id="preview" ref="preview" width="1080" height="2160" />
-    </div>
-    <form id="control">
-      <div class="title">
-        设置
-      </div>
-      <fieldset class="group">
-        <legend>预览</legend>
-        <div class="pair">
-          <input id="zhqn" v-model="zhqnSelected" :value="true" type="radio" name="prev">
-          <label for="zhqn">郑航青年</label>
-        </div>
-        <div class="pair">
-          <input id="cyol" v-model="zhqnSelected" :value="false" type="radio" name="prev">
-          <label for="cyol">青年大学习</label>
-        </div>
-      </fieldset>
-      <fieldset class="group">
-        <legend>个人信息</legend>
-        <div class="pair">
-          <label for="name">姓名</label>
-          <input id="name" v-model="name" type="text" placeholder="请输入姓名">
-        </div>
-        <div class="pair">
-          <label for="id">学号</label>
-          <input id="id" v-model.number="id" type="text" placeholder="请输入学号">
-        </div>
-        <button @click.prevent="api.authenticate(name, id)">
-          提交信息
-        </button>
-      </fieldset>
-      <fieldset class="group">
-        <legend>导出设置</legend>
-        <div class="pair">
-          <label for="filename1">郑航青年截图文件名</label>
-          <input id="filename1" v-model="fileName1" type="text" :placeholder="`${id}${name}(1).jpg`">
-        </div>
-        <div class="pair">
-          <label for="filename2">青年大学习截图文件名</label>
-          <input id="filename2" v-model="fileName2" type="text" :placeholder="`${id}${name}(2).jpg`">
-        </div>
-        <button @click.prevent="download">
-          下载文件
-        </button>
-      </fieldset>
-    </form>
+  <iframe
+    id="frame"
+    ref="frame"
+    src="/zhqn"
+    frameborder="0"
+    @load="zhqnLoaded = true"
+  />
+  <div id="border">
+    <canvas id="preview" ref="preview" width="1080" height="2160" />
   </div>
+  <fieldset id="control">
+    <div id="title">
+      设置
+    </div>
+    <fieldset id="switcher" class="section">
+      <legend>预览切换</legend>
+      <input
+        id="zhqn"
+        v-model="zhqnSelected"
+        class="radio"
+        :value="true"
+        type="radio"
+        name="prev"
+      >
+      <label for="zhqn">郑航青年</label>
+      <input
+        id="cyol"
+        v-model="zhqnSelected"
+        class="radio"
+        :value="false"
+        type="radio"
+        name="prev"
+      >
+      <label for="cyol">青年大学习</label>
+    </fieldset>
+    <fieldset class="section">
+      <legend>个人信息</legend>
+      <div class="pair">
+        <label for="name">姓名</label>
+        <input id="name" v-model="name" type="text" placeholder="请输入姓名">
+      </div>
+      <div class="pair">
+        <label for="id">学号</label>
+        <input id="id" v-model.number="id" type="text" placeholder="请输入学号">
+      </div>
+      <button @click.prevent="api.authenticate(name, id)">
+        提交信息
+      </button>
+    </fieldset>
+    <fieldset class="section">
+      <legend>导出设置</legend>
+      <div class="pair">
+        <label for="filename1">郑航青年截图文件名</label>
+        <input id="filename1" v-model="fileName1" type="text" :placeholder="`${id}${name}(1).jpg`">
+      </div>
+      <div class="pair">
+        <label for="filename2">青年大学习截图文件名</label>
+        <input id="filename2" v-model="fileName2" type="text" :placeholder="`${id}${name}(2).jpg`">
+      </div>
+      <button @click.prevent="download">
+        下载文件
+      </button>
+    </fieldset>
+  </fieldset>
+  <div id="top-ellipse" />
+  <div id="bottom-ellipse" />
 </template>
 
 <style>
-#container {
+#app {
   display: flex;
-  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: space-around;
+  margin: auto;
+  width: 80vw;
 }
 
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin: 0;
+#top-ellipse {
+  z-index: -1;
+  width: 100vw;
+  height: 60vh;
+  position: absolute;
+  top: -30vh;
+  border-radius: 50%;
+  background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
+}
+
+#app::before {
+  content: '';
+  z-index: -2;
+  width: 100vw;
+  height: 100vw;
+  position: absolute;
+  top: -50vw;
+  border-radius: 50%;
+  background: rgba(220, 255, 255, 0.3);
+}
+
+/* #bottom-ellipse {
+  z-index: -1;
+  width: 100vw;
+  height: 60vh;
+  position: absolute;
+  bottom: -30vh;
+  border-radius: 50%;
+  background: white linear-gradient(120deg, #a1c4fd 0%, #e3f6ff 100%);
+}
+
+#app::after {
+  content: '';
+  z-index: -2;
+  width: 100vw;
+  height: 100vw;
+  position: absolute;
+  bottom: -50vw;
+  border-radius: 50%;
+  background: rgba(240, 255, 255, 0.5);
+} */
+
+#border {
+  height: 74vh;
+  width: 39vh;
+  display: flex;
+  border-radius: 25px;
+  background-color: white;
+  box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.14) , 0px 1px 10px 0px rgba(0,0,0,0.12) , 0px 2px 4px -1px rgba(0,0,0,0.2);
+}
+
+#frame {
+  opacity: 0;
+  position: absolute;
+  transform: scale(0);
+  height: 864px;
+  width: 432px;
+}
+
+#preview {
+  height: 70vh;
+  width: 35vh;
+  margin: auto;
+  border-radius: 12.5px;
+  box-shadow: 0px 4px 6px -1px rgba(0,0,0,0.1) , 0px 2px 4px -1px rgba(0,0,0,0.06);
 }
 
 #control {
@@ -182,25 +254,96 @@ watch(zhqnSelected, nv => {
   height: auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-around;
+  /* text-align: center; */
+  border-style: none;
+  border-radius: 25px;
+  box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.14) , 0px 1px 10px 0px rgba(0,0,0,0.12) , 0px 2px 4px -1px rgba(0,0,0,0.2);
+  background-color: white;
+  padding: 2vmax;
 }
 
-#frame {
-  z-index: -10;
-  opacity: 0;
-  position: absolute;
-  /* transform: scale(0); */
-  height: 864px;
-  width: 432px;
+#title {
+  font: bold 48px sans-serif;
+  color: #a1c4fd;
 }
 
-#preview {
-  height: 80vh;
-  width: 40vh;
-}
-
-#group {
+.section {
+  border-radius: 25px;
+  margin: 10px 0;
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  border-style: solid none none solid;
+  border-color: #a1c4fd;
+  border-radius: 25px;
+  box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.1) , 0px 1px 2px 0px rgba(0,0,0,0.06);
+}
+
+#switcher {
+  /* background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%); */
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.radio {
+  display: none;
+}
+
+#switcher label {
+  line-height: 8vh;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  height: 8vh;
+  width: 45%;
+  background-image: url('./assets/check-mark.svg'), linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  background-repeat: no-repeat;
+  background-position: 110% 110%;
+  border-radius: 15px;
+}
+
+/* #switcher legend {
+  color: white;
+  text-shadow: 0px 2px 0px rgba(0,0,0,0.14) , 0px 3px -2px rgba(0,0,0,0.12) , 0px 1px 0px rgba(0,0,0,0.2);
+} */
+
+.section legend {
+  position: relative;
+  padding: 0 20px;
+  font: bold 24px sans-serif;
+  color: #a1c4fd;;
+}
+
+.pair {
+  margin: 10px auto;
+  width: calc(100% - 20px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pair label {
+  font-size: 14px;
+}
+
+.pair input {
+  width: 40%;
+  font-size: 14px;
+  border-radius: 5px;
+  border: #a1c4fd solid 2px;
+  padding: 2px 8px;
+  text-align: right;
+}
+
+button {
+  margin: 10px auto 0;
+  width: 20%;
+  height: 3vh;
+  background-color: #a1c4fd;
+  border-style: none;
+  border-radius: 5px;
+  color: white;
 }
 </style>
