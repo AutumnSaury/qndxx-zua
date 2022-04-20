@@ -31,9 +31,8 @@ async function renderZhqn () {
   phArr[0].textContent = name.value
   phArr[1].textContent = id.value.toString()
   // Render the page into canvas
-  zhqn = await html2canvas(frame.value.contentWindow.document.getElementsByTagName('uni-app')[0], { scale: 2.5 })
+  zhqn = await html2canvas(frame.value.contentDocument.getElementsByTagName('uni-app')[0], { scale: 2.5 })
   await drawPreview(zhqn, '中午11:51', '郑航青年大学习')
-  api.authenticate(name.value, id.value)
 }
 
 async function renderCyol () {
@@ -127,19 +126,22 @@ watch(zhqnSelected, nv => {
         </div>
         <div class="pair">
           <input id="cyol" v-model="zhqnSelected" :value="false" type="radio" name="prev">
-          <label for="cyol">中青在线</label>
+          <label for="cyol">青年大学习</label>
         </div>
       </fieldset>
       <fieldset class="group">
         <legend>个人信息</legend>
         <div class="pair">
           <label for="name">姓名</label>
-          <input id="name" v-model="name" type="text">
+          <input id="name" v-model="name" type="text" placeholder="请输入姓名">
         </div>
         <div class="pair">
           <label for="id">学号</label>
-          <input id="id" v-model.number="id" type="text">
+          <input id="id" v-model.number="id" type="text" placeholder="请输入学号">
         </div>
+        <button @click.prevent="api.authenticate(name, id)">
+          提交信息
+        </button>
       </fieldset>
       <fieldset class="group">
         <legend>导出设置</legend>
