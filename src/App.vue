@@ -185,10 +185,10 @@ watch(zhqnSelected, nv => {
 
 #top-ellipse {
   z-index: -1;
-  width: 100vw;
-  height: 60vh;
+  width: 50vw;
+  height: 50vw;
   position: absolute;
-  top: -30vh;
+  top: -25vw;
   border-radius: 50%;
   background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
 }
