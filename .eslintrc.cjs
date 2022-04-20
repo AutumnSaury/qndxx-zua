@@ -17,6 +17,11 @@ module.exports = {
     'vue'
   ],
   rules: {
-    'vue/comment-directive': 'off'
+    'vue/comment-directive': 'off',
+    'vue/max-attributes-per-line': ['error', {
+      singleline: {
+        max: 5
+      }
+    }]
   }
 }

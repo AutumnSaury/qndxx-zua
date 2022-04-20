@@ -1,6 +1,6 @@
 <script setup>
 import html2canvas from 'html2canvas'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import statusBarImg from './assets/statusBar.png'
 import api from './api/api.js'
 
@@ -9,6 +9,9 @@ const preview = ref(null)
 const frame = ref(null)
 const name = ref('foobar')
 const id = ref(1234567890)
+const zhqnSelected = ref(null)
+const fileName1 = ref('')
+const fileName2 = ref('')
 let zhqn
 
 async function renderZhqn () {
@@ -31,7 +34,6 @@ async function renderZhqn () {
   zhqn = await html2canvas(frame.value.contentWindow.document.getElementsByTagName('uni-app')[0], { scale: 2.5 })
   await drawPreview(zhqn, '中午11:51', '郑航青年大学习')
   api.authenticate(name.value, id.value)
-  // saveAs(preview.value.toDataURL('image/jpeg'), `${id}${name}(1).jpg`)
 }
 
 async function renderCyol () {
@@ -39,7 +41,13 @@ async function renderCyol () {
   const title = await api.getTitle(lessonID)
   const end = await loadImage(`/lessonroot/${lessonID}/images/end.jpg`)
   await drawPreview(end, '中午12:05', title)
-  // saveAs(preview.value.toDataURL('image/jpeg'), `${id}${name}(2).jpg`)
+}
+
+async function download () {
+  await renderZhqn()
+  saveAs(preview.value.toDataURL('image/jpeg'), fileName1.value || `${id.value}${name.value}(1).jpg`)
+  await renderCyol()
+  saveAs(preview.value.toDataURL('image/jpeg'), fileName2.value || `${id.value}${name.value}(2).jpg`)
 }
 
 async function renderStatusBar (height, width, templateUrl, title, time) {
@@ -86,41 +94,78 @@ function saveAs (url, fileName) {
   dllink.remove()
 }
 
+watch(zhqnSelected, nv => {
+  if (nv) {
+    renderZhqn()
+  } else {
+    renderCyol()
+  }
+})
 </script>
 
 <template>
-  <iframe
-    id="frame"
-    ref="frame"
-    src="/zhqn"
-    frameborder="0"
-    @load="zhqnLoaded = true"
-  />
-  <canvas
-    id="preview"
-    ref="preview"
-    width="1080"
-    height="2160"
-  />
-  <div id="control">
-    <input
-      v-model="name"
-      type="text"
-    >
-    <input
-      v-model="id"
-      type="number"
-    >
-    <button @click="renderZhqn">
-      郑航青年
-    </button>
-    <button @click="renderCyol">
-      中青在线
-    </button>
+  <div id="container">
+    <iframe
+      id="frame"
+      ref="frame"
+      src="/zhqn"
+      frameborder="0"
+      @load="zhqnLoaded = true"
+    />
+    <div id="border">
+      <canvas id="preview" ref="preview" width="1080" height="2160" />
+    </div>
+    <form id="control">
+      <div class="title">
+        设置
+      </div>
+      <fieldset class="group">
+        <legend>预览</legend>
+        <div class="pair">
+          <input id="zhqn" v-model="zhqnSelected" :value="true" type="radio" name="prev">
+          <label for="zhqn">郑航青年</label>
+        </div>
+        <div class="pair">
+          <input id="cyol" v-model="zhqnSelected" :value="false" type="radio" name="prev">
+          <label for="cyol">中青在线</label>
+        </div>
+      </fieldset>
+      <fieldset class="group">
+        <legend>个人信息</legend>
+        <div class="pair">
+          <label for="name">姓名</label>
+          <input id="name" v-model="name" type="text">
+        </div>
+        <div class="pair">
+          <label for="id">学号</label>
+          <input id="id" v-model.number="id" type="text">
+        </div>
+      </fieldset>
+      <fieldset class="group">
+        <legend>导出设置</legend>
+        <div class="pair">
+          <label for="filename1">郑航青年截图文件名</label>
+          <input id="filename1" v-model="fileName1" type="text" :placeholder="`${id}${name}(1).jpg`">
+        </div>
+        <div class="pair">
+          <label for="filename2">青年大学习截图文件名</label>
+          <input id="filename2" v-model="fileName2" type="text" :placeholder="`${id}${name}(2).jpg`">
+        </div>
+        <button @click.prevent="download">
+          下载文件
+        </button>
+      </fieldset>
+    </form>
   </div>
 </template>
 
 <style>
+#container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -135,6 +180,7 @@ function saveAs (url, fileName) {
   height: auto;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
 #frame {
@@ -149,5 +195,10 @@ function saveAs (url, fileName) {
 #preview {
   height: 80vh;
   width: 40vh;
+}
+
+#group {
+  display: flex;
+  flex-direction: column;
 }
 </style>
