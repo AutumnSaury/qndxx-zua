@@ -18,6 +18,7 @@ let zhqn
 async function renderZhqn () {
   if (!zhqnLoaded.value) {
     alert('未加载完成')
+    zhqnSelected.value = null
     return
   }
   const bg = frame.value.contentDocument.getElementsByClassName('bg')[0] || frame.value.contentDocument.getElementsByClassName('bgalt')[0]
@@ -97,7 +98,7 @@ function saveAs (url, fileName) {
 watch(zhqnSelected, nv => {
   if (nv) {
     renderZhqn()
-  } else {
+  } else if (nv === false) {
     renderCyol()
   }
 })
