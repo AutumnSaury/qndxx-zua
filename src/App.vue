@@ -100,9 +100,9 @@ function saveAs (url, fileName) {
 
 async function reDraw (nv = zhqnSelected.value) {
   if (nv) {
-    renderZhqn()
+    await renderZhqn()
   } else if (nv === false) {
-    renderCyol()
+    await renderCyol()
   }
 }
 
@@ -155,12 +155,14 @@ watch(zhqnSelected, reDraw)
         <label for="id">学号</label>
         <input id="id" v-model.number="id" type="text" placeholder="请输入学号">
       </div>
-      <button @click.prevent="api.authenticate(name, id)">
-        提交信息
-      </button>
-      <button @click.prevent="reDraw">
-        刷新预览窗口
-      </button>
+      <div id="infoaction">
+        <button @click.prevent="api.authenticate(name, id)">
+          提交信息
+        </button>
+        <button @click.prevent="reDraw">
+          刷新预览窗口
+        </button>
+      </div>
     </fieldset>
     <fieldset class="section">
       <legend>导出设置</legend>
@@ -331,5 +333,12 @@ button {
   border-style: none;
   border-radius: 5px;
   color: white;
+}
+
+#infoaction {
+  width: 100%;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
 }
 </style>
