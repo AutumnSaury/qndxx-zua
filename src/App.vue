@@ -4,6 +4,7 @@ import { ref, watch } from 'vue'
 import statusBarImg from './assets/statusBar.png'
 import api from './api/api.js'
 import './assets/check-mark.svg'
+import './assets/empty.svg'
 
 const zhqnLoaded = ref(false)
 const preview = ref(null)
@@ -13,6 +14,7 @@ const id = ref('')
 const zhqnSelected = ref(null)
 const fileName1 = ref('')
 const fileName2 = ref('')
+const drawn = ref(false)
 let zhqn
 
 async function renderZhqn () {
@@ -80,6 +82,7 @@ function loadImage (url) {
 }
 
 async function drawPreview (content, time, title, top = statusBarImg) {
+  drawn.value = true
   const draw = preview.value.getContext('2d')
   const statusBar = await renderStatusBar(195, 1080, statusBarImg, title, time)
   draw.drawImage(content, 0, 195, 1080, 1965)
@@ -113,7 +116,7 @@ watch(zhqnSelected, nv => {
     @load="zhqnLoaded = true"
   />
   <div id="border">
-    <canvas id="preview" ref="preview" width="1080" height="2160" />
+    <canvas v-show="drawn" id="preview" ref="preview" width="1080" height="2160" />
   </div>
   <fieldset id="control">
     <div id="title">
@@ -209,8 +212,9 @@ watch(zhqnSelected, nv => {
   width: 39vh;
   display: flex;
   border-radius: 25px;
-  background-color: white;
   box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.14) , 0px 1px 10px 0px rgba(0,0,0,0.12) , 0px 2px 4px -1px rgba(0,0,0,0.2);
+  background: white url('./assets/empty.svg') center center no-repeat;
+  background-size: 20%;
 }
 
 #frame {
@@ -235,7 +239,6 @@ watch(zhqnSelected, nv => {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  /* text-align: center; */
   border-style: none;
   border-radius: 25px;
   box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.14) , 0px 1px 10px 0px rgba(0,0,0,0.12) , 0px 2px 4px -1px rgba(0,0,0,0.2);
@@ -286,11 +289,6 @@ watch(zhqnSelected, nv => {
   background-repeat: no-repeat;
   background-position: 110% 110%;
 }
-
-/* #switcher legend {
-  color: white;
-  text-shadow: 0px 2px 0px rgba(0,0,0,0.14) , 0px 3px -2px rgba(0,0,0,0.12) , 0px 1px 0px rgba(0,0,0,0.2);
-} */
 
 .section legend {
   position: relative;
