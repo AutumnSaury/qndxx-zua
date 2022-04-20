@@ -128,7 +128,7 @@ watch(zhqnSelected, nv => {
         type="radio"
         name="prev"
       >
-      <label for="zhqn">郑航青年</label>
+      <label for="zhqn" :class="{selected: zhqnSelected}">郑航青年</label>
       <input
         id="cyol"
         v-model="zhqnSelected"
@@ -137,7 +137,7 @@ watch(zhqnSelected, nv => {
         type="radio"
         name="prev"
       >
-      <label for="cyol">青年大学习</label>
+      <label for="cyol" :class="{selected: zhqnSelected === false}">青年大学习</label>
     </fieldset>
     <fieldset class="section">
       <legend>个人信息</legend>
@@ -203,27 +203,6 @@ watch(zhqnSelected, nv => {
   background: rgba(220, 255, 255, 0.3);
 }
 
-/* #bottom-ellipse {
-  z-index: -1;
-  width: 100vw;
-  height: 60vh;
-  position: absolute;
-  bottom: -30vh;
-  border-radius: 50%;
-  background: white linear-gradient(120deg, #a1c4fd 0%, #e3f6ff 100%);
-}
-
-#app::after {
-  content: '';
-  z-index: -2;
-  width: 100vw;
-  height: 100vw;
-  position: absolute;
-  bottom: -50vw;
-  border-radius: 50%;
-  background: rgba(240, 255, 255, 0.5);
-} */
-
 #border {
   height: 74vh;
   width: 39vh;
@@ -237,7 +216,7 @@ watch(zhqnSelected, nv => {
   opacity: 0;
   position: absolute;
   transform: scale(0);
-  height: 864px;
+  height: 786px;
   width: 432px;
 }
 
@@ -281,7 +260,6 @@ watch(zhqnSelected, nv => {
 }
 
 #switcher {
-  /* background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%); */
   flex-direction: row;
   justify-content: space-around;
 }
@@ -298,10 +276,14 @@ watch(zhqnSelected, nv => {
   color: white;
   height: 8vh;
   width: 45%;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  border-radius: 15px;
+}
+
+#switcher .selected {
   background-image: url('./assets/check-mark.svg'), linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
   background-repeat: no-repeat;
   background-position: 110% 110%;
-  border-radius: 15px;
 }
 
 /* #switcher legend {
