@@ -31,14 +31,16 @@ async function renderZhqn () {
   phArr[1].textContent = id.value.toString()
   // Render the page into canvas
   zhqn = await html2canvas(frame.value.contentDocument.getElementsByTagName('uni-app')[0], { scale: 2.5 })
-  await drawPreview(zhqn, '中午11:51', '郑航青年大学习')
+  await drawPreview(zhqn, getAffixedTime(), '郑航青年大学习')
 }
 
 async function renderCyol () {
   const lessonID = await api.getLatestLessonID()
   const title = await api.getTitle(lessonID)
   const end = await loadImage(`/lessonroot/${lessonID}/images/end.jpg`)
-  await drawPreview(end, '中午12:05', title)
+  // 8-12 minutes after now
+  const randTime = new Date(Date.now() + 480000 + Math.floor(Math.random() * 240001))
+  await drawPreview(end, getAffixedTime(randTime), title)
 }
 
 async function download () {
@@ -46,6 +48,28 @@ async function download () {
   saveAs(preview.value.toDataURL('image/jpeg'), fileName1.value || `${id.value}${name.value}(1).jpg`)
   await renderCyol()
   saveAs(preview.value.toDataURL('image/jpeg'), fileName2.value || `${id.value}${name.value}(2).jpg`)
+}
+
+// Prefix 12 hour time
+function getAffixedTime (time = new Date()) {
+  let prefix
+  if (time.getHours() === 0 || time.getHours() === 23) {
+    prefix = '半夜'
+  } else if (time.getHours() >= 1 && time.getHours() <= 6) {
+    prefix = '凌晨'
+  } else if (time.getHours() >= 7 && time.getHours() <= 11) {
+    prefix = '上午'
+  } else if (time.getHours() === 12) {
+    prefix = '中午'
+  } else if (time.getHours() >= 13 && time.getHours() <= 16) {
+    prefix = '下午'
+  } else if (time.getHours() === 17 || time.getHours() === 18) {
+    prefix = '傍晚'
+  } else if (time.getHours() >= 19 || time.getHours() <= 22) {
+    prefix = '晚上'
+  }
+  const hour = !time.getHours() % 12 ? 12 : time.getHours() % 12
+  return prefix + hour.toString() + ':' + time.getMinutes().toString().padStart(2, '0')
 }
 
 async function renderStatusBar (height, width, templateUrl, title, time) {
@@ -57,12 +81,12 @@ async function renderStatusBar (height, width, templateUrl, title, time) {
   // Place template
   drawBar.drawImage(bg, 0, 0)
   // Draw title
-  drawBar.font = '4.5em sans serif'
+  drawBar.font = '4.5em sans'
   drawBar.textAlign = 'center'
   drawBar.textBaseline = 'middle'
   drawBar.fillText(title, 538, 135)
   // Draw time
-  drawBar.font = '3.2em sans serif'
+  drawBar.font = '3.2em sans'
   drawBar.fillStyle = '#5f5f5f'
   drawBar.fillText(time, 970, 40)
   return bar
@@ -108,7 +132,6 @@ async function reDraw (nv = zhqnSelected.value) {
     await renderCyol()
   }
 }
-
 watch(zhqnSelected, reDraw)
 </script>
 
@@ -118,10 +141,19 @@ watch(zhqnSelected, reDraw)
     ref="frame"
     src="/zhqn"
     frameborder="0"
-    @load="initFrame(); zhqnLoaded = true"
+    @load="
+      initFrame();
+      zhqnLoaded = true;
+    "
   />
   <div id="border">
-    <canvas v-show="drawn" id="preview" ref="preview" width="1080" height="2160" />
+    <canvas
+      v-show="drawn"
+      id="preview"
+      ref="preview"
+      width="1080"
+      height="2160"
+    />
   </div>
   <fieldset id="control">
     <div id="title">
@@ -137,7 +169,7 @@ watch(zhqnSelected, reDraw)
         type="radio"
         name="prev"
       >
-      <label for="zhqn" :class="{selected: zhqnSelected}">郑航青年</label>
+      <label for="zhqn" :class="{ selected: zhqnSelected }">郑航青年</label>
       <input
         id="cyol"
         v-model="zhqnSelected"
@@ -146,7 +178,10 @@ watch(zhqnSelected, reDraw)
         type="radio"
         name="prev"
       >
-      <label for="cyol" :class="{selected: zhqnSelected === false}">青年大学习</label>
+      <label
+        for="cyol"
+        :class="{ selected: zhqnSelected === false }"
+      >青年大学习</label>
     </fieldset>
     <fieldset class="section">
       <legend>个人信息</legend>
@@ -156,7 +191,12 @@ watch(zhqnSelected, reDraw)
       </div>
       <div class="pair">
         <label for="id">学号</label>
-        <input id="id" v-model.number="id" type="text" placeholder="请输入学号">
+        <input
+          id="id"
+          v-model.number="id"
+          type="text"
+          placeholder="请输入学号"
+        >
       </div>
       <div id="infoaction">
         <button @click.prevent="api.authenticate(name, id)">
@@ -171,11 +211,21 @@ watch(zhqnSelected, reDraw)
       <legend>导出设置</legend>
       <div class="pair">
         <label for="filename1">郑航青年截图文件名</label>
-        <input id="filename1" v-model="fileName1" type="text" :placeholder="`${id}${name}(1).jpg`">
+        <input
+          id="filename1"
+          v-model="fileName1"
+          type="text"
+          :placeholder="`${id}${name}(1).jpg`"
+        >
       </div>
       <div class="pair">
         <label for="filename2">青年大学习截图文件名</label>
-        <input id="filename2" v-model="fileName2" type="text" :placeholder="`${id}${name}(2).jpg`">
+        <input
+          id="filename2"
+          v-model="fileName2"
+          type="text"
+          :placeholder="`${id}${name}(2).jpg`"
+        >
       </div>
       <button @click.prevent="download">
         下载文件
@@ -207,7 +257,7 @@ watch(zhqnSelected, reDraw)
 }
 
 #app::before {
-  content: '';
+  content: "";
   z-index: -2;
   width: 100vw;
   height: 100vw;
@@ -222,8 +272,9 @@ watch(zhqnSelected, reDraw)
   width: 39vh;
   display: flex;
   border-radius: 25px;
-  box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.14) , 0px 1px 10px 0px rgba(0,0,0,0.12) , 0px 2px 4px -1px rgba(0,0,0,0.2);
-  background: white url('./assets/empty.svg') center center no-repeat;
+  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  background: white url("./assets/empty.svg") center center no-repeat;
   background-size: 20%;
 }
 
@@ -240,7 +291,8 @@ watch(zhqnSelected, reDraw)
   width: 35vh;
   margin: auto;
   border-radius: 12.5px;
-  box-shadow: 0px 4px 6px -1px rgba(0,0,0,0.1) , 0px 2px 4px -1px rgba(0,0,0,0.06);
+  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0px 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 #control {
@@ -251,7 +303,8 @@ watch(zhqnSelected, reDraw)
   justify-content: space-around;
   border-style: none;
   border-radius: 25px;
-  box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.14) , 0px 1px 10px 0px rgba(0,0,0,0.12) , 0px 2px 4px -1px rgba(0,0,0,0.2);
+  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
   background-color: white;
   padding: 1vmax 2vmax 2vmax;
 }
@@ -270,7 +323,8 @@ watch(zhqnSelected, reDraw)
   border-style: solid none none solid;
   border-color: #a1c4fd;
   border-radius: 25px;
-  box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.1) , 0px 1px 2px 0px rgba(0,0,0,0.06);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1),
+    0px 1px 2px 0px rgba(0, 0, 0, 0.06);
 }
 
 #switcher {
@@ -295,7 +349,8 @@ watch(zhqnSelected, reDraw)
 }
 
 #switcher .selected {
-  background-image: url('./assets/check-mark.svg'), linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  background-image: url("./assets/check-mark.svg"),
+    linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
   background-repeat: no-repeat;
   background-position: 110% 110%;
 }
@@ -304,7 +359,7 @@ watch(zhqnSelected, reDraw)
   position: relative;
   padding: 0 20px;
   font: bold 24px sans-serif;
-  color: #a1c4fd;;
+  color: #a1c4fd;
 }
 
 .pair {
@@ -321,11 +376,17 @@ watch(zhqnSelected, reDraw)
 
 .pair input {
   width: 40%;
-  font-size: 14px;
+  font-size: 12px;
   border-radius: 5px;
   border: #a1c4fd solid 2px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   text-align: right;
+  transition: box-shadow 0.5s;
+}
+
+.pair input:focus {
+  outline: none;
+  box-shadow: 0px 8px 17px 2px rgba(92, 164, 255, 0.14) , 0px 3px 14px 2px rgba(121, 227, 255, 0.12) , 0px 5px 5px -3px rgba(61, 196, 255, 0.2) ;
 }
 
 button {
