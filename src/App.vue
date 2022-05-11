@@ -132,6 +132,14 @@ async function reDraw (nv = zhqnSelected.value) {
     await renderCyol()
   }
 }
+
+async function submitInfo (name, id) {
+  const result = await api.authenticate(name, id)
+  if ((await result.json()).status !== 1) {
+    alert('提交失败，请检查已填写的个人信息。')
+  }
+}
+
 watch(zhqnSelected, reDraw)
 </script>
 
@@ -199,7 +207,7 @@ watch(zhqnSelected, reDraw)
         >
       </div>
       <div id="infoaction">
-        <button @click.prevent="api.authenticate(name, id)">
+        <button @click.prevent="submitInfo(name, id)">
           提交信息
         </button>
         <button @click.prevent="reDraw">
@@ -391,7 +399,9 @@ watch(zhqnSelected, reDraw)
 
 button {
   margin: 10px auto 0;
-  width: 20%;
+  padding: 5px 10px;
+  width: auto;
+  min-width: 20%;
   height: 3vh;
   background-color: #a1c4fd;
   border-style: none;

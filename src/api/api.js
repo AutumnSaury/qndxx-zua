@@ -3,7 +3,7 @@ export default {
     return (await (await fetch('/lessonlist')).json())?.obj.news.list[0].link.match(/(?<=daxuexi\/)[\w\d]+/)[0]
   },
   authenticate: async function (name, id) {
-    fetch('/zqauth', {
+    return await fetch('/zqauth', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
