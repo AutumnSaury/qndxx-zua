@@ -154,7 +154,7 @@ watch(zhqnSelected, reDraw)
       zhqnLoaded = true;
     "
   />
-  <div id="canvas-container">
+  <div id="preview-container">
     <canvas v-show="drawn" id="preview" ref="preview" width="1080" height="2160" />
   </div>
   <fieldset id="control">
@@ -221,13 +221,67 @@ watch(zhqnSelected, reDraw)
 </template>
 
 <style lang="less">
+
+* {
+  transition: 0.5s;
+}
+
+// 高宽高比，PC
+@media (min-aspect-ratio: 4/3) {
+  #app {
+    justify-content: space-around;
+    width: 80vw;
+  }
+
+  #preview-container {
+    height: 90vh;
+    width: calc(90vh * (39 / 74));
+    margin: auto;
+
+    #preview {
+      height: 90%;
+      width: 90%;
+    }
+  }
+
+  #control {
+    height: 70vh;
+    width: 30vw;
+    min-width: 400px;
+    margin: auto;
+  }
+}
+
+// 低宽高比，手机
+@media (max-aspect-ratio: 4/3) {
+  #app {
+    flex-direction: column;
+    justify-content: center;
+    width: 100vw;
+  }
+
+  #preview-container {
+    height: 90vh;
+    width: calc(90vh * (39 / 74));
+    margin: 5vh auto;
+
+    #preview {
+      height: 90%;
+      width: 90%;
+    }
+  }
+
+  #control {
+    width: 60vw;
+    margin: 5vh auto;
+  }
+}
+
 #app {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-around;
   margin: auto;
-  width: 80vw;
+  align-items: center;
 
   &::before {
     content: "";
@@ -251,15 +305,24 @@ watch(zhqnSelected, reDraw)
   }
 }
 
-#canvas-container {
-  height: 74vh;
-  width: 39vh;
+#preview-container {
+  // height: 74vmin;
+  // width: 39vmin;
   display: flex;
   border-radius: 25px;
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.14),
     0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
   background: white url("./assets/empty.svg") center center no-repeat;
   background-size: 20%;
+
+  #preview {
+    // height: 70vmin;
+    // width: 35vmin;
+    margin: auto;
+    border-radius: 12.5px;
+    box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
 }
 
 #frame {
@@ -272,18 +335,10 @@ watch(zhqnSelected, reDraw)
   width: 432px;
 }
 
-#preview {
-  height: 70vh;
-  width: 35vh;
-  margin: auto;
-  border-radius: 12.5px;
-  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0px 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
 #control {
-  width: 30vw;
+  // width: 30vmax;
   height: auto;
+  // max-height: 70vh;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -343,6 +398,18 @@ watch(zhqnSelected, reDraw)
         }
       }
     }
+
+    button {
+      margin: 10px auto 0;
+      padding: 5px 10px;
+      width: auto;
+      min-width: 20%;
+      height: 2.5em;
+      background-color: #a1c4fd;
+      border-style: none;
+      border-radius: 5px;
+      color: white;
+    }
   }
 
   #switch {
@@ -372,18 +439,6 @@ watch(zhqnSelected, reDraw)
       background-position: 110% 110%;
     }
   }
-}
-
-button {
-  margin: 10px auto 0;
-  padding: 5px 10px;
-  width: auto;
-  min-width: 20%;
-  height: 2.5em;
-  background-color: #a1c4fd;
-  border-style: none;
-  border-radius: 5px;
-  color: white;
 }
 
 #info-action {
