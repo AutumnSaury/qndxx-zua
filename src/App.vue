@@ -275,7 +275,7 @@ onMounted(async () => {
   #preview-container {
     height: 90vh;
     width: calc(90vh * (39 / 74));
-    margin: auto;
+    margin: 5vh auto;
 
     #preview {
       height: 90%;
