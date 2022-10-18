@@ -154,20 +154,14 @@ watch(zhqnSelected, reDraw)
       zhqnLoaded = true;
     "
   />
-  <div id="border">
-    <canvas
-      v-show="drawn"
-      id="preview"
-      ref="preview"
-      width="1080"
-      height="2160"
-    />
+  <div id="canvas-container">
+    <canvas v-show="drawn" id="preview" ref="preview" width="1080" height="2160" />
   </div>
   <fieldset id="control">
     <div id="title">
       设置
     </div>
-    <fieldset id="switcher" class="section">
+    <fieldset id="switch" class="section">
       <legend>预览切换</legend>
       <input
         id="zhqn"
@@ -186,10 +180,7 @@ watch(zhqnSelected, reDraw)
         type="radio"
         name="prev"
       >
-      <label
-        for="cyol"
-        :class="{ selected: zhqnSelected === false }"
-      >青年大学习</label>
+      <label for="cyol" :class="{ selected: zhqnSelected === false }">青年大学习</label>
     </fieldset>
     <fieldset class="section">
       <legend>个人信息</legend>
@@ -199,14 +190,9 @@ watch(zhqnSelected, reDraw)
       </div>
       <div class="pair">
         <label for="id">学号</label>
-        <input
-          id="id"
-          v-model.number="id"
-          type="text"
-          placeholder="请输入学号"
-        >
+        <input id="id" v-model.number="id" type="text" placeholder="请输入学号">
       </div>
-      <div id="infoaction">
+      <div id="info-action">
         <button @click.prevent="submitInfo(name, id)">
           提交信息
         </button>
@@ -219,21 +205,11 @@ watch(zhqnSelected, reDraw)
       <legend>导出设置</legend>
       <div class="pair">
         <label for="filename1">郑航青年截图文件名</label>
-        <input
-          id="filename1"
-          v-model="fileName1"
-          type="text"
-          :placeholder="`${id}${name}(1).jpg`"
-        >
+        <input id="filename1" v-model="fileName1" type="text" :placeholder="`${id}${name}(1).jpg`">
       </div>
       <div class="pair">
         <label for="filename2">青年大学习截图文件名</label>
-        <input
-          id="filename2"
-          v-model="fileName2"
-          type="text"
-          :placeholder="`${id}${name}(2).jpg`"
-        >
+        <input id="filename2" v-model="fileName2" type="text" :placeholder="`${id}${name}(2).jpg`">
       </div>
       <button @click.prevent="download">
         下载文件
@@ -244,7 +220,7 @@ watch(zhqnSelected, reDraw)
   <div id="bottom-ellipse" />
 </template>
 
-<style>
+<style lang="less">
 #app {
   display: flex;
   flex-wrap: nowrap;
@@ -252,30 +228,30 @@ watch(zhqnSelected, reDraw)
   justify-content: space-around;
   margin: auto;
   width: 80vw;
+
+  &::before {
+    content: "";
+    z-index: -2;
+    width: 100vw;
+    height: 100vw;
+    position: absolute;
+    top: -50vw;
+    border-radius: 50%;
+    background: rgba(220, 255, 255, 0.3);
+  }
+
+  #top-ellipse {
+    z-index: -1;
+    width: 50vw;
+    height: 50vw;
+    position: absolute;
+    top: -25vw;
+    border-radius: 50%;
+    background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
+  }
 }
 
-#top-ellipse {
-  z-index: -1;
-  width: 50vw;
-  height: 50vw;
-  position: absolute;
-  top: -25vw;
-  border-radius: 50%;
-  background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
-}
-
-#app::before {
-  content: "";
-  z-index: -2;
-  width: 100vw;
-  height: 100vw;
-  position: absolute;
-  top: -50vw;
-  border-radius: 50%;
-  background: rgba(220, 255, 255, 0.3);
-}
-
-#border {
+#canvas-container {
   height: 74vh;
   width: 39vh;
   display: flex;
@@ -290,6 +266,8 @@ watch(zhqnSelected, reDraw)
   opacity: 0;
   position: absolute;
   transform: scale(0);
+  // TODO: 适配不同设备的长宽比
+  // 这个是Mate10Pro在微信自带浏览器上的视口大小
   height: 786px;
   width: 432px;
 }
@@ -315,86 +293,85 @@ watch(zhqnSelected, reDraw)
     0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
   background-color: white;
   padding: 1vmax 2vmax 2vmax;
-}
 
-#title {
-  font: bold 48px sans-serif;
-  color: #a1c4fd;
-}
+  #title {
+    font: bold 48px sans-serif;
+    color: #a1c4fd;
+  }
 
-.section {
-  border-radius: 25px;
-  margin: 10px 0;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  border-style: solid none none solid;
-  border-color: #a1c4fd;
-  border-radius: 25px;
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1),
-    0px 1px 2px 0px rgba(0, 0, 0, 0.06);
-}
+  .section {
+    border-radius: 25px;
+    margin: 10px 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    border-style: solid none none solid;
+    border-color: #a1c4fd;
+    border-radius: 25px;
+    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1),
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06);
 
-#switcher {
-  flex-direction: row;
-  justify-content: space-around;
-}
+    legend {
+      position: relative;
+      padding: 0 20px;
+      font: bold 24px sans-serif;
+      color: #a1c4fd;
+    }
 
-.radio {
-  display: none;
-}
+    .pair {
+      margin: 10px auto;
+      width: calc(100% - 20px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-#switcher label {
-  line-height: 8vh;
-  text-align: center;
-  font-size: 24px;
-  font-weight: bold;
-  color: white;
-  height: 8vh;
-  width: 45%;
-  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
-  border-radius: 15px;
-}
+      label {
+        font-size: 14px;
+      }
 
-#switcher .selected {
-  background-image: url("./assets/check-mark.svg"),
-    linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
-  background-repeat: no-repeat;
-  background-position: 110% 110%;
-}
+      input {
+        width: 40%;
+        font-size: 12px;
+        border-radius: 5px;
+        border: #a1c4fd solid 2px;
+        padding: 4px 8px;
+        text-align: right;
+        transition: box-shadow 0.5s;
+        &:focus {
+          outline: none;
+          box-shadow: 0px 8px 17px 2px rgba(92, 164, 255, 0.14), 0px 3px 14px 2px rgba(121, 227, 255, 0.12), 0px 5px 5px -3px rgba(61, 196, 255, 0.2);
+        }
+      }
+    }
+  }
 
-.section legend {
-  position: relative;
-  padding: 0 20px;
-  font: bold 24px sans-serif;
-  color: #a1c4fd;
-}
+  #switch {
+    flex-direction: row;
+    justify-content: space-around;
 
-.pair {
-  margin: 10px auto;
-  width: calc(100% - 20px);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    input[type="radio"] {
+      display: none;
+    }
 
-.pair label {
-  font-size: 14px;
-}
+    label {
+      line-height: 3em;
+      text-align: center;
+      font-size: 2em;
+      font-weight: bold;
+      color: white;
+      height: 3em;
+      width: 45%;
+      background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+      border-radius: 15px;
+    }
 
-.pair input {
-  width: 40%;
-  font-size: 12px;
-  border-radius: 5px;
-  border: #a1c4fd solid 2px;
-  padding: 4px 8px;
-  text-align: right;
-  transition: box-shadow 0.5s;
-}
-
-.pair input:focus {
-  outline: none;
-  box-shadow: 0px 8px 17px 2px rgba(92, 164, 255, 0.14) , 0px 3px 14px 2px rgba(121, 227, 255, 0.12) , 0px 5px 5px -3px rgba(61, 196, 255, 0.2) ;
+    .selected {
+      background-image: url("./assets/check-mark.svg"),
+      linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+      background-repeat: no-repeat;
+      background-position: 110% 110%;
+    }
+  }
 }
 
 button {
@@ -402,14 +379,14 @@ button {
   padding: 5px 10px;
   width: auto;
   min-width: 20%;
-  height: 3vh;
+  height: 2.5em;
   background-color: #a1c4fd;
   border-style: none;
   border-radius: 5px;
   color: white;
 }
 
-#infoaction {
+#info-action {
   width: 100%;
   margin: auto;
   display: flex;
