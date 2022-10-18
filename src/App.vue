@@ -1,6 +1,6 @@
 <script setup>
 import html2canvas from 'html2canvas'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import statusBarImg from './assets/statusBar.png'
 import api from './api/api.js'
 import './assets/check-mark.svg'
@@ -140,7 +140,43 @@ async function submitInfo (name, id) {
   }
 }
 
+const previewContainer = ref(null)
+const control = ref(null)
+const scrollBtn = ref(null)
+let notInViewport
+
+function onLeave (el, callback) {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        callback()
+      }
+    })
+  })
+  observer.observe(el)
+}
+
+function handleScroll () {
+  notInViewport.scrollIntoView({ behavior: 'smooth' })
+}
+
+function handleScrollBtnTurnOver (deg) {
+  scrollBtn.value.style.rotate = deg
+}
+
 watch(zhqnSelected, reDraw)
+
+onMounted(async () => {
+  notInViewport = control.value
+  onLeave(previewContainer.value, () => {
+    handleScrollBtnTurnOver('180deg')
+    notInViewport = control.value
+  })
+  onLeave(control.value, () => {
+    handleScrollBtnTurnOver('0deg')
+    notInViewport = previewContainer.value
+  })
+})
 </script>
 
 <template>
@@ -154,10 +190,13 @@ watch(zhqnSelected, reDraw)
       zhqnLoaded = true;
     "
   />
-  <div id="preview-container">
+  <button id="scroll-btn" ref="scrollBtn" @click.prevent="handleScroll">
+    ↑
+  </button>
+  <div id="preview-container" ref="previewContainer">
     <canvas v-show="drawn" id="preview" ref="preview" width="1080" height="2160" />
   </div>
-  <fieldset id="control">
+  <fieldset id="control" ref="control">
     <div id="title">
       设置
     </div>
@@ -250,6 +289,10 @@ watch(zhqnSelected, reDraw)
     min-width: 400px;
     margin: auto;
   }
+
+  #scroll-btn {
+    display: none;
+  }
 }
 
 // 低宽高比，手机
@@ -272,12 +315,27 @@ watch(zhqnSelected, reDraw)
   }
 
   #control {
-    width: 60vw;
+    width: 90vw;
     margin: 5vh auto;
+  }
+
+  #scroll-btn {
+    position: fixed;
+    bottom: 10vh;
+    right: 4vw;
+    width: 3em;
+    height: 3em;
+    border-radius: 50%;
+    border: none;
+    background-color: #a1c4fd;
+    color: #fff;
+    font-weight: bolder;
+    font-size: 24px;
   }
 }
 
 #app {
+  overflow: auto;
   display: flex;
   flex-wrap: nowrap;
   margin: auto;
@@ -316,8 +374,6 @@ watch(zhqnSelected, reDraw)
   background-size: 20%;
 
   #preview {
-    // height: 70vmin;
-    // width: 35vmin;
     margin: auto;
     border-radius: 12.5px;
     box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -336,9 +392,7 @@ watch(zhqnSelected, reDraw)
 }
 
 #control {
-  // width: 30vmax;
   height: auto;
-  // max-height: 70vh;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -347,7 +401,7 @@ watch(zhqnSelected, reDraw)
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.14),
     0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
   background-color: white;
-  padding: 1vmax 2vmax 2vmax;
+  // padding: 1vmax 2vmax 2vmax;
 
   #title {
     font: bold 48px sans-serif;
