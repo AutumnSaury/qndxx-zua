@@ -68,7 +68,7 @@ function getAffixedTime (time = new Date()) {
   } else if (time.getHours() >= 19 || time.getHours() <= 22) {
     prefix = '晚上'
   }
-  const hour = !time.getHours() % 12 ? 12 : time.getHours() % 12
+  const hour = (time.getHours() % 12) ? time.getHours() % 12 : 12
   return prefix + hour.toString() + ':' + time.getMinutes().toString().padStart(2, '0')
 }
 
