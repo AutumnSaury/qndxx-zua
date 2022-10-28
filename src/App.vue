@@ -6,15 +6,25 @@ import api from './api/api.js'
 import './assets/check-mark.svg'
 import './assets/empty.svg'
 
+// 郑航青年网页加载完成
 const zhqnLoaded = ref(false)
+// 预览canvas
 const preview = ref(null)
+// 郑航青年iframe
 const frame = ref(null)
+// 姓名
 const name = ref('')
+// 学号
 const id = ref('')
+// 选择的预览页面
 const zhqnSelected = ref(null)
+// 郑航青年页面截图文件名
 const fileName1 = ref('')
+// 青年大学习结束截图文件名
 const fileName2 = ref('')
+// 预览图已绘制？
 const drawn = ref(false)
+// 主窗体canvas
 let zhqn
 
 async function renderZhqn () {
