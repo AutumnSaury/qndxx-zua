@@ -44,6 +44,7 @@ async function renderCyol () {
 }
 
 async function download () {
+  await submitInfo(name.value, id.value)
   await renderZhqn()
   saveAs(preview.value.toDataURL('image/jpeg'), fileName1.value || `${id.value}${name.value}(1).jpg`)
   await renderCyol()
@@ -136,7 +137,9 @@ async function reDraw (nv = zhqnSelected.value) {
 async function submitInfo (name, id) {
   const result = await api.authenticate(name, id)
   if ((await result.json()).status !== 1) {
-    alert('提交失败，请检查已填写的个人信息。')
+    alert('提交失败，请检查已填写的个人信息')
+  } else {
+    alert('提交成功')
   }
 }
 
