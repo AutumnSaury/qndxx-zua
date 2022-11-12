@@ -11,13 +11,12 @@ module.exports = {
   overrides: [
   ],
   parserOptions: {
-    ecmaVersion: 12,
+    ecmaVersion: 'latest',
     sourceType: 'module'
   },
   plugins: [
     'vue'
   ],
   rules: {
-    'no-unused-vars': 'warn'
   }
 }
