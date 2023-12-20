@@ -1,4 +1,5 @@
 import HWM10PBar from './assets/status-bars/hwm10p.png'
+import RMK50Bar from './assets/status-bars/rmk50.png'
 
 /**
  * @type {import('./drawer').PhonePreset[]}
@@ -39,6 +40,43 @@ export const presets = [
       timeFont: 'sans-serif',
       timeSize: '32px',
       timeColor: '#5f5f5f'
+    }
+  },
+  {
+    name: 'Redmi K50',
+    height: 3200,
+    width: 1440,
+    timeFormatter: (time) => {
+      let prefix
+      if (time.getHours() === 0 || time.getHours() === 23) {
+        prefix = '半夜'
+      } else if (time.getHours() >= 1 && time.getHours() <= 6) {
+        prefix = '凌晨'
+      } else if (time.getHours() >= 7 && time.getHours() <= 11) {
+        prefix = '上午'
+      } else if (time.getHours() === 12) {
+        prefix = '中午'
+      } else if (time.getHours() >= 13 && time.getHours() <= 16) {
+        prefix = '下午'
+      } else if (time.getHours() === 17 || time.getHours() === 18) {
+        prefix = '傍晚'
+      } else if (time.getHours() >= 19 || time.getHours() <= 22) {
+        prefix = '晚上'
+      }
+      const hour = (time.getHours() % 12) ? time.getHours() % 12 : 12
+      return prefix + hour.toString() + ':' + time.getMinutes().toString().padStart(2, '0')
+    },
+    statusBar: {
+      imageUrl: RMK50Bar,
+      height: 277,
+      titlePosition: { x: 710, y: 190 },
+      titleFont: 'MiSans',
+      titleSize: '60px',
+      titleColor: '#171717',
+      timePosition: { x: 160, y: 65 },
+      timeFont: 'MiSans',
+      timeSize: '48px',
+      timeColor: '#3b3b3b'
     }
   }
 ]

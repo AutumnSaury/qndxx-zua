@@ -3,7 +3,7 @@
     ↑
   </button>
   <div id="preview-container" ref="previewContainer">
-    <canvas id="preview" ref="preview" width="1080" height="2160"></canvas>
+    <canvas id="preview" ref="preview" :width="selectedPreset.width" :height="selectedPreset.height"></canvas>
   </div>
   <fieldset id="control" ref="control">
     <div id="title">
@@ -69,9 +69,10 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
-import { authenticate, getLessonList, getLessonAssets } from './apis'
+import { authenticate, getLessonAssets, getLessonList } from './apis'
 import './assets/check-mark.svg'
 import './assets/empty.svg'
+import './assets/MiSans-Medium.woff2'
 import { PreviewDrawer } from './drawer'
 import { presets } from './presets'
 import { saveAs } from './utils'
@@ -99,9 +100,9 @@ const lessonList = ref([])
 const selectedLesson = ref(null)
 /**
  * 当前选择的机型预设
- * @type {import('vue').Ref<import('./drawer').PhonePreset | null>}
+ * @type {import('vue').Ref<import('./drawer').PhonePreset>}
  */
-const selectedPreset = ref(null)
+const selectedPreset = ref(presets[0])
 // 渲染器
 const drawer = new PreviewDrawer()
 
@@ -153,7 +154,7 @@ function handleScrollBtnTurnOver (deg) {
 
 watch(selectedPreset, (preset) => {
   drawer.loadPreset(preset)
-})
+}, { immediate: true })
 
 onMounted(async () => {
   notInViewport = control.value
@@ -168,12 +169,15 @@ onMounted(async () => {
 
   lessonList.value = await getLessonList(30)
   selectedLesson.value = lessonList.value[0]
-  selectedPreset.value = presets[0]
   drawer.bindCanvas(preview.value)
 })
 </script>
 
 <style lang="less">
+@font-face {
+  font-family: 'MiSans';
+  src: url('./assets/MiSans-Medium.woff2') format('woff2');
+}
 
 * {
   transition: 0.5s;
@@ -188,7 +192,7 @@ onMounted(async () => {
 
   #preview-container {
     height: 90vh;
-    width: calc(90vh * (39 / 74));
+    aspect-ratio: v-bind('selectedPreset.width') / v-bind('selectedPreset.height');
     margin: 5vh auto;
 
     #preview {
@@ -219,7 +223,7 @@ onMounted(async () => {
 
   #preview-container {
     height: 90vh;
-    width: calc(90vh * (39 / 74));
+    aspect-ratio: v-bind('selectedPreset.width') / v-bind('selectedPreset.height');
     margin: 5vh auto;
 
     #preview {
