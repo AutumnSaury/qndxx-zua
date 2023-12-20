@@ -3,7 +3,7 @@
     ↑
   </button>
   <div id="preview-container" ref="previewContainer">
-    <canvas v-show="drawn" id="preview" ref="preview" width="1080" height="2160" />
+    <canvas id="preview" ref="preview" width="1080" height="2160"></canvas>
   </div>
   <fieldset id="control" ref="control">
     <div id="title">
@@ -19,38 +19,67 @@
         <label for="id">学号</label>
         <input id="id" v-model.number="id" type="text" placeholder="请输入学号">
       </div>
-      <div id="info-action">
-        <button @click.prevent="submitInfo(name, id)">
-          提交信息
-        </button>
-        <button @click.prevent="reDraw">
-          刷新预览窗口
-        </button>
-      </div>
+      <button @click.prevent="submitInfo(name, id)">
+        提交信息
+      </button>
     </fieldset>
     <fieldset class="section">
       <legend>导出设置</legend>
       <div class="pair">
-        <label for="filename2">青年大学习截图文件名</label>
-        <input id="filename2" v-model="fileName" type="text" :placeholder="`${id}${name}.jpg`">
+        <label for="filename">青年大学习截图文件名</label>
+        <input id="filename" v-model="fileName" type="text" :placeholder="`${id}${name}.jpg`">
       </div>
-      <button @click.prevent="download">
-        下载文件
-      </button>
+      <div class="pair">
+        <label>用于生成的青年大学习视频</label>
+        <select v-model="selectedLesson">
+          <option
+            v-for="(value, index) in lessonList"
+            :value="value"
+            :key="index"
+          >
+            {{ value.title }}
+          </option>
+        </select>
+      </div>
+      <div class="pair">
+        <label for="episode">机型预设</label>
+        <select v-model="selectedPreset">
+          <option
+            v-for="(value, index) in presets"
+            :value="value"
+            :key="index"
+          >
+            {{ value.name }}
+          </option>
+        </select>
+      </div>
+      <div id="export-action">
+        <button @click.prevent="handleDownload">
+          下载文件
+        </button>
+        <button @click.prevent="handleRender">
+          生成预览
+        </button>
+      </div>
     </fieldset>
   </fieldset>
-  <div id="top-ellipse" />
-  <div id="bottom-ellipse" />
+  <div id="top-ellipse"></div>
+  <div id="bottom-ellipse"></div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import statusBarImg from './assets/statusBar.png'
-import api from './api/api.js'
+import { onMounted, ref, watch } from 'vue'
+import { authenticate, getLessonList, getLessonAssets } from './apis'
 import './assets/check-mark.svg'
 import './assets/empty.svg'
+import { PreviewDrawer } from './drawer'
+import { presets } from './presets'
+import { saveAs } from './utils'
 
-// 预览canvas
+/**
+ * 预览canvas
+ * @type {import('vue').Ref<HTMLCanvasElement>}
+ */
 const preview = ref(null)
 // 姓名
 const name = ref('')
@@ -58,99 +87,40 @@ const name = ref('')
 const id = ref('')
 // 青年大学习结束截图文件名
 const fileName = ref('')
-// 预览图已绘制？
-const drawn = ref(false)
+/**
+ * 青年大学习列表
+ * @type {import('vue').Ref<import('./apis').Lesson[]>}
+ */
+const lessonList = ref([])
+/**
+ * 当前选择的青年大学习课程
+ * @type {import('vue').Ref<import('./apis').Lesson | null>}
+ */
+const selectedLesson = ref(null)
+/**
+ * 当前选择的机型预设
+ * @type {import('vue').Ref<import('./drawer').PhonePreset | null>}
+ */
+const selectedPreset = ref(null)
+// 渲染器
+const drawer = new PreviewDrawer()
 
-async function renderCyol () {
-  const lessonID = await api.getLatestLessonID()
-  const title = await api.getTitle(lessonID)
-  const end = await loadImage(`/lessonroot/${lessonID}/images/end.jpg`)
+async function handleRender () {
+  const { image, title } = await getLessonAssets(selectedLesson.value)
   // 8-12 minutes after now
   const randTime = new Date(Date.now() + 480000 + Math.floor(Math.random() * 240001))
-  await drawPreview(end, getAffixedTime(randTime), title)
+  await drawer.draw(title, randTime, image)
 }
 
-async function download () {
+async function handleDownload () {
   await submitInfo(name.value, id.value)
-  await renderCyol()
-  saveAs(preview.value.toDataURL('image/jpeg'), fileName.value || `${id.value}${name.value}.jpg`)
-}
-
-// Prefix 12 hour time
-function getAffixedTime (time = new Date()) {
-  let prefix
-  if (time.getHours() === 0 || time.getHours() === 23) {
-    prefix = '半夜'
-  } else if (time.getHours() >= 1 && time.getHours() <= 6) {
-    prefix = '凌晨'
-  } else if (time.getHours() >= 7 && time.getHours() <= 11) {
-    prefix = '上午'
-  } else if (time.getHours() === 12) {
-    prefix = '中午'
-  } else if (time.getHours() >= 13 && time.getHours() <= 16) {
-    prefix = '下午'
-  } else if (time.getHours() === 17 || time.getHours() === 18) {
-    prefix = '傍晚'
-  } else if (time.getHours() >= 19 || time.getHours() <= 22) {
-    prefix = '晚上'
-  }
-  const hour = (time.getHours() % 12) ? time.getHours() % 12 : 12
-  return prefix + hour.toString() + ':' + time.getMinutes().toString().padStart(2, '0')
-}
-
-async function renderStatusBar (height, width, templateUrl, title, time) {
-  const bar = document.createElement('canvas')
-  bar.height = height
-  bar.width = width
-  const drawBar = bar.getContext('2d')
-  const bg = await loadImage(templateUrl)
-  // Place template
-  drawBar.drawImage(bg, 0, 0)
-  // Draw title
-  drawBar.font = '4.5em sans'
-  drawBar.textAlign = 'center'
-  drawBar.textBaseline = 'middle'
-  drawBar.fillText(title, 538, 135)
-  // Draw time
-  drawBar.font = '3.2em sans'
-  drawBar.fillStyle = '#5f5f5f'
-  drawBar.fillText(time, 970, 40)
-  return bar
-}
-
-function loadImage (url) {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.src = url
-    image.onload = () => resolve(image)
-    image.onerror = reject
-  })
-}
-
-async function drawPreview (content, time, title, top = statusBarImg) {
-  drawn.value = true
-  const draw = preview.value.getContext('2d')
-  const statusBar = await renderStatusBar(195, 1080, statusBarImg, title, time)
-  draw.drawImage(content, 0, 195, 1080, 1965)
-  statusBar.src = top
-  draw.drawImage(statusBar, 0, 0, 1080, 195)
-}
-
-function saveAs (url, fileName) {
-  const dllink = document.createElement('a')
-  dllink.href = url
-  dllink.download = fileName
-  dllink.click()
-  dllink.remove()
-}
-
-async function reDraw () {
-  await renderCyol()
+  await handleRender()
+  saveAs(drawer.getDataUrl('image/jpeg'), fileName.value || `${id.value}${name.value}.jpg`)
 }
 
 async function submitInfo (name, id) {
-  const result = await api.authenticate(name, id)
-  if ((await result.json()).status !== 1) {
+  const result = await authenticate(name, id)
+  if (!result) {
     alert('提交失败，请检查已填写的个人信息')
   } else {
     alert('提交成功')
@@ -181,6 +151,10 @@ function handleScrollBtnTurnOver (deg) {
   scrollBtn.value.style.rotate = deg
 }
 
+watch(selectedPreset, (preset) => {
+  drawer.loadPreset(preset)
+})
+
 onMounted(async () => {
   notInViewport = control.value
   onLeave(previewContainer.value, () => {
@@ -192,7 +166,10 @@ onMounted(async () => {
     notInViewport = previewContainer.value
   })
 
-  await reDraw()
+  lessonList.value = await getLessonList(30)
+  selectedLesson.value = lessonList.value[0]
+  selectedPreset.value = presets[0]
+  drawer.bindCanvas(preview.value)
 })
 </script>
 
@@ -312,9 +289,7 @@ onMounted(async () => {
 
   #preview {
     margin: auto;
-    border-radius: 12.5px;
-    box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 5px;
   }
 }
 
@@ -388,6 +363,20 @@ onMounted(async () => {
           box-shadow: 0px 8px 17px 2px rgba(92, 164, 255, 0.14), 0px 3px 14px 2px rgba(121, 227, 255, 0.12), 0px 5px 5px -3px rgba(61, 196, 255, 0.2);
         }
       }
+
+      select {
+        width: 40%;
+        font-size: 12px;
+        border-radius: 5px;
+        border: #a1c4fd solid 2px;
+        padding: 4px 8px;
+        text-align: right;
+        transition: box-shadow 0.5s;
+        &:focus {
+          outline: none;
+          box-shadow: 0px 8px 17px 2px rgba(92, 164, 255, 0.14), 0px 3px 14px 2px rgba(121, 227, 255, 0.12), 0px 5px 5px -3px rgba(61, 196, 255, 0.2);
+        }
+      }
     }
 
     button {
@@ -432,10 +421,14 @@ onMounted(async () => {
   }
 }
 
-#info-action {
+#export-action {
   width: 100%;
   margin: auto;
   display: flex;
   justify-content: space-around;
+}
+
+button {
+  cursor: pointer;
 }
 </style>
