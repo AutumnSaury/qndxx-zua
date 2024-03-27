@@ -138,7 +138,7 @@ export class PreviewDrawer {
    * @param {string} type
    * @return {string}
    */
-  async getDataUrl (type) {
+  getDataUrl (type) {
     return this.canvas.toDataURL(type)
   }
 }
